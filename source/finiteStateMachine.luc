@@ -1,0 +1,156 @@
+module finiteStateMachine (
+    input clk,  // clock
+    input rst,  // reset
+    output led[8], //8 user controllable LEDs
+    input cclk,
+    input io_button[5],
+    input sum,
+    input carryIn,
+    output pinA,
+    output pinB,
+    output pinC,
+    output spi_miso, //AVR SPI MISO high
+    input spi_ss, //AVR SPI Slave Select
+    input spi_mosi, //AVR SPI MOSI
+    input spi_sck, //AVR S 
+    output spi_channel [4], //AVR general purpose pins (used by default to select ADC ADC channel) PI Clock
+    input avr_tx, //AVR TX (FPGA TX)
+    output avr_rx, //AVR RX(FPGA RX)
+    input avr_rx_busy, //AVR RX buffer full
+    output io_led [3][8],
+    output io_seg[8], //7 segment leds on io shield
+    output io_select[4],// digit selected on io shield
+    input io_di[3][8] //dip switches on io shield
+    )
+  {
+  
+  .clk(clk){
+    .rst(rst){
+      fsm state = {STATE000,STATE001,STATE010,STATE011,STATE100,STATE101,STATE110,STATE111};
+      dff counter[30];
+      dff blinker[25];
+    }
+  }
+  
+  always {
+    led=8h00; //turn LEDs off
+    spi_miso=bz; //not using spi
+    spi_channel=bzzzz; //not using flags
+    avr_rx=bz;//not using serial port
+    pinA=b1;
+    pinB=b1;
+    pinC=b1;
+    io_led=3x{{8h00}};//turn leds off
+    io_seg=8hff;//turn segments off
+    io_select=4hf;//select no digits
+    blinker.d=0;
+    
+    
+    case(state.q){
+    
+      state.STATE000:
+        counter.d=3b0;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==0 && sum==0){
+          state.d=state.STATE001;
+          io_led[0][0]=1;
+          }
+        else{
+          blinker.d=blinker.q+1;
+        } 
+        
+      state.STATE001:
+        counter.d=counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==0&&sum==1){
+          state.d=state.STATE010;
+          io_led[0][1]=1;
+        }
+        else{
+          blinker.d=blinker.q+1;
+        }
+        
+      state.STATE010:
+        counter.d = counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==0&&sum==1){
+          state.d=state.STATE011;
+          io_led[0][2]=1;
+        }
+        else{
+          blinker.d=blinker.q+1;
+        }
+        
+      state.STATE011:
+        counter.d=counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==1&&sum==0){
+          state.d=state.STATE100;
+          io_led[0][3]=1;
+        }
+        else{
+        blinker.d=blinker.q+1;
+        }
+        
+      state.STATE100:
+        counter.d=counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==0&&sum==1){
+          state.d=state.STATE101;
+          io_led[0][4]=1;
+        }
+        else{
+        blinker.d=blinker.q+1;
+        }
+        
+      state.STATE101:
+        counter.d=counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==1&&sum==0){
+          state.d=state.STATE110;
+          io_led[0][5]=1;
+        }
+        else{
+          blinker.d=blinker.q+1;
+        }
+        
+      state.STATE110:
+        counter.d=counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==1&&sum==0){
+          state.d=state.STATE111;
+          io_led[0][6]=1;
+        }
+        else{
+          blinker.d=blinker.q+1;
+        }
+        
+      state.STATE111:
+        counter.d=counter.q+1;
+        pinA=counter.q[28];
+        pinB=counter.q[27];
+        pinC=counter.q[29];
+        if(carryIn==1&&sum==1){
+          io_led[0][7]=1;
+          //light up everything?
+        }
+        else{
+        blinker.d=blinker.q+1;
+        }
+    }       
+  }
+}

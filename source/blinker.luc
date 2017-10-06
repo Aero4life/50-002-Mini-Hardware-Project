@@ -1,0 +1,18 @@
+module blinker (
+    input clk,  // clock
+    input rst,  // reset
+    output a, // cant use b1 b2 b3
+    output b,
+    output c
+    //output b0 //output to LED
+  ) {
+  
+  dff counter[30](.clk(clk),.rst(rst));
+
+  always {
+    a=counter.q[29];
+    b=counter.q[28];
+    c=counter.q[27];
+    counter.d=counter.q+1;
+  }
+}
